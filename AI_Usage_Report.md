@@ -111,6 +111,12 @@ The initial version mapped all major components:
 7. **ADR 7 - Content Security Sanitization**: OWASP HTML Sanitizer for XSS prevention
 
 ### What changes were made
+
+**Factual corrections (cross-checked against source code):**
+- **ADR 1 (RESTful API Framework)**: The initial version's Context section incorrectly referenced the SPA as being built with "AngularJS." Inspection of `reader-web/src/main/webapp/src/index.html` reveals the application uses a custom jQuery-driven SPA architecture with plugins like `jquery.history.js` and `jquery.ui.js`, compiled with Less and Grunt. Corrected all AngularJS references to "jQuery/Less."
+- **ADR 6 (Multi-Platform Distribution)**: The initial version stated "six distribution modules as Maven sub-projects" and listed `reader-distribution-docker` as the sixth. However, the parent `pom.xml` `prod` profile only declares five Maven modules (standalone, debian, redhat, mac, windows). The `reader-distribution-docker` directory contains only a `Dockerfile` and `docker-compose.yml` with no `pom.xml` — it is not a Maven sub-project. Corrected to "five Maven sub-projects plus a standalone Docker configuration."
+
+**Quality improvements:**
 - Added specific version numbers and configuration details (e.g., C3P0 pool sizes, Hibernate dialect settings) to ground the ADRs in the actual codebase rather than generic descriptions
 - Expanded the "Negative" consequences section for each ADR to include version-specific concerns (e.g., Jersey 1.x being legacy, Hibernate 4.x missing newer features, Lucene 4.2 being outdated)
 - Added the comparison of alternatives considered for each decision to document why other options were rejected
@@ -118,6 +124,8 @@ The initial version mapped all major components:
 - Added the DeadEventListener detail in ADR 5 as it represents an important debugging/observability pattern
 
 ### Why those changes were necessary
+- **ADR 1 correction**: The AngularJS attribution was factually wrong — no AngularJS dependency exists anywhere in the project. Accurate technology identification is fundamental to an ADR's value as a decision record.
+- **ADR 6 correction**: Claiming Docker was a Maven sub-project misrepresents the build architecture. Docker is built outside Maven via `docker build`, which is a materially different build and deployment pipeline. The distinction matters for CI/CD and release management.
 - ADRs should be grounded in the specific codebase, not generic technology descriptions — version numbers and configuration details make them actionable for future developers
 - Documenting alternatives considered is a key part of the ADR format that helps future architects understand the decision space
 - Negative consequences are often underspecified in initial drafts but are the most valuable part of an ADR for future decision-makers evaluating whether to change the architecture
