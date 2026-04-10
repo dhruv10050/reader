@@ -39,5 +39,5 @@ A synchronous `DeadEventListener` catches unhandled events for debugging.
 - **In-process only**: Events are lost if the application crashes before listeners complete processing; no persistence or replay capability unlike JMS.
 - **No guaranteed delivery**: Failed listener execution (e.g., Lucene write failure) silently drops the event with only logging; no retry mechanism.
 - **Limited scalability**: The in-process EventBus doesn't support distributed event processing across multiple application instances.
-- **Guava EventBus is deprecated-in-spirit**: Google recommends reactive streams or other patterns for new projects; EventBus is maintained but no longer actively enhanced.
+- **Guava EventBus is no longer actively developed**: Google recommends alternative patterns such as reactive streams for new projects; EventBus is maintained for backward compatibility but receives no new features.
 - **Debugging difficulty**: Asynchronous event dispatch can make it harder to trace the flow of operations through the system compared to direct method calls.

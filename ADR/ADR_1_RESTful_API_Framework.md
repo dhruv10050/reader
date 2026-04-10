@@ -25,6 +25,6 @@ We will use **Jersey 1.19.4** (JAX-RS 1.1 reference implementation) as the REST 
 - **Servlet compatibility**: Deploys as a standard WAR file to any Java Servlet container, enabling flexible deployment options (embedded Jetty, standalone Tomcat, etc.).
 
 ### Negative
-- **Jersey 1.x is legacy**: Jersey 1.x has been superseded by Jersey 2.x (JAX-RS 2.0), which limits access to newer features like async request processing and improved dependency injection.
+- **Jersey 1.x is significantly outdated**: Jersey 1.x is multiple major versions behind the current JAX-RS specification, which limits access to newer features like async request processing, improved dependency injection, and modern Java support.
 - **No built-in dependency injection**: Unlike Spring, Jersey 1.x requires manual wiring or integration with a DI framework, leading to more boilerplate in resource classes.
 - **Limited middleware ecosystem**: Compared to Spring Boot, Jersey has fewer out-of-the-box integrations for security, monitoring, and configuration management.

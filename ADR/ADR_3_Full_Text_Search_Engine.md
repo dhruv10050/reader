@@ -27,7 +27,7 @@ Indexing will be managed asynchronously through the Guava EventBus: article crea
 - **Rebuild capability**: The full index can be rebuilt from the database if corrupted, providing self-healing recovery.
 
 ### Negative
-- **Lucene 4.2 is outdated**: This version (released 2013) lacks performance improvements, new analyzers, and API enhancements in later Lucene versions (7.x, 8.x, 9.x).
+- **Lucene 4.2 is significantly outdated**: This version (released 2013) lacks the performance improvements, new analyzers, and API enhancements available in current Lucene releases.
 - **Single-node only**: Lucene is an embedded library without built-in distribution, limiting horizontal scalability if the article volume grows very large.
 - **Index corruption risk**: File-based Lucene indexes can become corrupted on unclean shutdowns, though the rebuild capability mitigates this.
 - **Memory overhead**: The RAM-based storage mode consumes JVM heap memory proportional to the index size, which can be significant with many articles.
