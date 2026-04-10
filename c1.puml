@@ -1,0 +1,23 @@
+@startuml C1_Context_Diagram
+!include <C4/C4_Context>
+
+title System Context Diagram (C1) - Sismics Reader
+
+Person(user, "Reader User", "A person who wants to read and organize RSS/Atom feeds, star articles, and search content.")
+Person(admin, "Administrator", "Manages users, system configuration, and monitors background jobs.")
+
+System(reader, "Sismics Reader", "An open-source, web-based RSS/Atom feed aggregator that allows users to subscribe to feeds, organize them into categories, read articles, and perform full-text search.")
+
+System_Ext(rss_feeds, "RSS/Atom Feed Sources", "External websites and blogs that publish RSS or Atom syndication feeds.")
+System_Ext(favicon_servers, "Favicon Servers", "Web servers hosting favicon images for feed sources.")
+System_Ext(opml_sources, "OPML Sources", "External OPML files used to import/export feed subscription lists (e.g., Google Reader exports).")
+
+Rel(user, reader, "Reads articles, manages subscriptions, searches content", "HTTPS / Web Browser")
+Rel(admin, reader, "Manages users and system settings", "HTTPS / Web Browser")
+Rel(reader, rss_feeds, "Fetches and parses RSS/Atom feeds periodically", "HTTP/HTTPS")
+Rel(reader, favicon_servers, "Downloads favicon images for feeds", "HTTP/HTTPS")
+Rel(user, reader, "Uses mobile app to read feeds", "HTTPS / Android App")
+Rel_L(opml_sources, reader, "Imports feed subscription lists", "OPML/JSON File Upload")
+
+SHOW_LEGEND()
+@enduml
