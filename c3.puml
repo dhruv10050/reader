@@ -1,0 +1,98 @@
+@startuml C3_Component_Diagram
+!include <C4/C4_Component>
+
+title Component Diagram (C3) - Sismics Reader REST API Server (reader-web + reader-core)
+
+Container_Boundary(rest_api, "REST API Server") {
+
+    Component(user_resource, "UserResource", "Jersey REST Resource", "Handles user registration, login/logout, profile management, and user deletion. Endpoint: /api/user")
+    Component(subscription_resource, "SubscriptionResource", "Jersey REST Resource", "Manages feed subscriptions: subscribe, unsubscribe, update, OPML import/export, feed discovery. Endpoint: /api/subscription")
+    Component(article_resource, "ArticleResource", "Jersey REST Resource", "Lists, searches, and batch-updates articles (mark read/unread). Endpoint: /api/article")
+    Component(category_resource, "CategoryResource", "Jersey REST Resource", "CRUD operations for organizing feeds into categories. Endpoint: /api/category")
+    Component(starred_resource, "StarredResource", "Jersey REST Resource", "Manages starred/favorite articles. Endpoint: /api/starred")
+    Component(search_resource, "SearchResource", "Jersey REST Resource", "Full-text search across articles using Lucene. Endpoint: /api/search")
+    Component(app_resource, "AppResource", "Jersey REST Resource", "Provides application info, version, and configuration. Endpoint: /api/app")
+    Component(job_resource, "JobResource", "Jersey REST Resource", "Reports background job status (imports, syncs). Endpoint: /api/job")
+
+    Component(security_filter, "Security Filters", "Servlet Filter Chain", "TokenBasedSecurityFilter and HeaderBasedSecurityFilter validate authentication tokens and set user principal context.")
+    Component(validation_util, "ValidationUtil", "Utility", "Input validation for REST request parameters (length, format, required fields).")
+
+    Component(feed_service, "FeedService", "Guava AbstractScheduledService", "Scheduled background service that fetches RSS/Atom feeds, parses articles, handles feed discovery, and manages favicons.")
+    Component(indexing_service, "IndexingService", "Guava AbstractScheduledService", "Manages Lucene search index lifecycle: initialization, scheduled optimization, and rebuild operations.")
+
+    Component(user_dao, "UserDao", "JPA DAO", "Data access for user entities: CRUD, authentication lookup, user search.")
+    Component(article_dao, "ArticleDao (JPA)", "JPA DAO", "Data access for articles: CRUD, criteria-based queries, pagination, read/unread status tracking.")
+    Component(feed_dao, "FeedDao", "JPA DAO", "Data access for RSS/Atom feed entities: CRUD, subscription tracking, last fetch date management.")
+    Component(subscription_dao, "FeedSubscriptionDao", "JPA DAO", "Data access for user-feed subscriptions with category assignments.")
+    Component(category_dao, "CategoryDao", "JPA DAO", "Data access for feed categories per user.")
+    Component(user_article_dao, "UserArticleDao", "JPA DAO", "Tracks per-user article state: read date, starred status.")
+    Component(token_dao, "AuthenticationTokenDao", "JPA DAO", "Manages long-lived authentication tokens for stateless sessions.")
+
+    Component(lucene_article_dao, "ArticleDao (Lucene)", "Lucene DAO", "Full-text indexing and search of articles using Lucene: create, update, delete, and search with grouping and highlighting.")
+
+    Component(rss_reader, "RssReader", "Feed Parser", "Parses RSS 2.0 and Atom 1.0 feed XML into article objects with GUID resolution and URL guessing strategies.")
+    Component(opml_reader, "OpmlReader", "OPML Parser", "Parses OPML XML files for bulk feed subscription import/export.")
+    Component(html_sanitizer, "ArticleSanitizer", "OWASP HTML Sanitizer", "Sanitizes article HTML content to prevent XSS attacks using OWASP Java HTML Sanitizer library.")
+    Component(http_client, "ReaderHttpClient", "HTTP Client", "HTTP client wrapper for fetching remote RSS/Atom feeds and favicon images with timeout and error handling.")
+
+    Component(event_bus_component, "Event Bus & Listeners", "Guava EventBus", "Asynchronous event dispatching: ArticleCreated/Updated/Deleted events trigger Lucene indexing; FaviconUpdateRequested triggers favicon download; SubscriptionImported triggers bulk import.")
+
+    Component(app_context, "AppContext", "Singleton", "Global application context holding references to EventBus, thread pools, FeedService, and IndexingService. Manages application lifecycle.")
+}
+
+ContainerDb(database, "Relational Database", "HSQLDB / PostgreSQL", "Stores all persistent data.")
+Container(lucene_index, "Search Index", "Apache Lucene 4.2", "Full-text search index files.")
+System_Ext(rss_feeds, "RSS/Atom Feed Sources", "External feed providers.")
+
+Rel(user_resource, security_filter, "Authenticates via")
+Rel(user_resource, user_dao, "Reads/writes user data")
+Rel(user_resource, token_dao, "Creates/validates tokens")
+
+Rel(subscription_resource, security_filter, "Authenticates via")
+Rel(subscription_resource, subscription_dao, "Manages subscriptions")
+Rel(subscription_resource, feed_dao, "Looks up feeds")
+Rel(subscription_resource, feed_service, "Triggers feed sync")
+Rel(subscription_resource, opml_reader, "Parses OPML imports")
+
+Rel(article_resource, security_filter, "Authenticates via")
+Rel(article_resource, article_dao, "Queries articles")
+Rel(article_resource, user_article_dao, "Manages read/starred state")
+
+Rel(category_resource, security_filter, "Authenticates via")
+Rel(category_resource, category_dao, "Manages categories")
+
+Rel(starred_resource, security_filter, "Authenticates via")
+Rel(starred_resource, user_article_dao, "Stars/unstars articles")
+
+Rel(search_resource, security_filter, "Authenticates via")
+Rel(search_resource, lucene_article_dao, "Searches articles")
+
+Rel(feed_service, rss_reader, "Parses feeds with")
+Rel(feed_service, http_client, "Fetches remote feeds")
+Rel(feed_service, feed_dao, "Updates feed metadata")
+Rel(feed_service, article_dao, "Stores new articles")
+Rel(feed_service, event_bus_component, "Publishes article events")
+Rel(feed_service, html_sanitizer, "Sanitizes article content")
+
+Rel(event_bus_component, lucene_article_dao, "Triggers indexing")
+Rel(event_bus_component, http_client, "Downloads favicons")
+
+Rel(indexing_service, lucene_article_dao, "Manages index lifecycle")
+
+Rel(app_context, feed_service, "Manages lifecycle")
+Rel(app_context, indexing_service, "Manages lifecycle")
+Rel(app_context, event_bus_component, "Manages lifecycle")
+
+Rel(user_dao, database, "JDBC/JPA")
+Rel(article_dao, database, "JDBC/JPA")
+Rel(feed_dao, database, "JDBC/JPA")
+Rel(subscription_dao, database, "JDBC/JPA")
+Rel(category_dao, database, "JDBC/JPA")
+Rel(user_article_dao, database, "JDBC/JPA")
+Rel(token_dao, database, "JDBC/JPA")
+
+Rel(lucene_article_dao, lucene_index, "Lucene API")
+Rel(http_client, rss_feeds, "HTTP/HTTPS")
+
+SHOW_LEGEND()
+@enduml

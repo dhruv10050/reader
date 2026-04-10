@@ -1,0 +1,36 @@
+@startuml C2_Container_Diagram
+!include <C4/C4_Container>
+
+title Container Diagram (C2) - Sismics Reader
+
+Person(user, "Reader User", "Reads and organizes RSS/Atom feeds.")
+Person(admin, "Administrator", "Manages users and system configuration.")
+
+System_Boundary(reader_system, "Sismics Reader") {
+    Container(web_ui, "Web Application (SPA)", "jQuery, HTML, Less, JavaScript", "Provides the web-based user interface for reading feeds, managing subscriptions, and searching articles.")
+    Container(rest_api, "REST API Server", "Java, Jersey 1.19, Jetty 9.4", "Exposes RESTful API endpoints for user management, subscriptions, articles, categories, search, and system administration.")
+    Container(android_app, "Android App", "Java, Android SDK", "Native Android mobile application that communicates with the REST API for reading feeds on mobile devices.")
+    Container(desktop_agent, "Desktop Agent", "Java Swing, Embedded Jetty", "Desktop application with system tray integration that embeds the Jetty server and web application for local usage.")
+    ContainerDb(database, "Relational Database", "HSQLDB / PostgreSQL", "Stores users, feeds, articles, subscriptions, categories, authentication tokens, jobs, and configuration data.")
+    Container(lucene_index, "Search Index", "Apache Lucene 4.2", "Full-text search index storing article titles, descriptions, content, and creator metadata for fast search queries.")
+}
+
+System_Ext(rss_feeds, "RSS/Atom Feed Sources", "External websites publishing syndication feeds.")
+System_Ext(favicon_servers, "Favicon Servers", "Web servers hosting favicon images.")
+
+Rel(user, web_ui, "Reads articles, manages subscriptions", "HTTPS")
+Rel(admin, web_ui, "Manages users and settings", "HTTPS")
+Rel(user, android_app, "Reads articles on mobile", "HTTPS")
+Rel(user, desktop_agent, "Uses local desktop application", "HTTP (localhost)")
+
+Rel(web_ui, rest_api, "Makes API calls", "JSON/HTTPS")
+Rel(android_app, rest_api, "Makes API calls", "JSON/HTTPS")
+Rel(desktop_agent, rest_api, "Embeds and serves", "In-process")
+
+Rel(rest_api, database, "Reads/writes data", "JDBC / Hibernate JPA")
+Rel(rest_api, lucene_index, "Indexes and searches articles", "Lucene API")
+Rel(rest_api, rss_feeds, "Fetches and parses feeds periodically", "HTTP/HTTPS")
+Rel(rest_api, favicon_servers, "Downloads favicon images", "HTTP/HTTPS")
+
+SHOW_LEGEND()
+@enduml
