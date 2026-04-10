@@ -21,13 +21,13 @@ The initial version identified:
 ### What changes were made
 - Refined the description of the Sismics Reader system to emphasize its key capabilities (subscribe, organize into categories, read, full-text search)
 - Added the Android App relationship as a separate connection from the user to distinguish mobile from web access
-- Changed OPML Sources relationship direction to show it as an inbound data flow (file upload) rather than an outbound fetch
-- Added protocol annotations (HTTPS, HTTP/HTTPS, OPML/JSON File Upload) to all relationship arrows for clarity
+- Added protocol annotations (HTTPS, HTTP/HTTPS) to all relationship arrows for clarity
+- Removed OPML Sources as an external system — OPML is a static file format uploaded by the user via the browser, not an automated external system that Sismics integrates with. This corrects a C4 modeling error where a data artifact was misrepresented as an external system.
 
 ### Why those changes were necessary
 - The initial version underspecified the mobile access pattern, which is a distinct deployment target (Android app) separate from the web SPA
 - Protocol annotations are essential in C4 context diagrams to communicate how systems interact at a high level
-- The OPML relationship direction was corrected because OPML files are uploaded by users, not fetched by the system from external sources
+- OPML import is a user-driven file upload action, not a system-to-system integration — it does not belong as a System_Ext in a C1 context diagram
 
 ---
 
@@ -49,14 +49,14 @@ The initial version identified 8 containers within the system boundary:
 - Async Event Bus (Guava EventBus)
 
 ### What changes were made
-- Separated the Event Bus as a distinct container rather than embedding it within the REST API server, because it serves as an independent communication backbone connecting multiple components
-- Added the Feed Synchronization Service as a distinct container because it runs as a background `AbstractScheduledService` with its own lifecycle, separate from the request-processing REST API
+- Corrected the Web Application technology from AngularJS to jQuery/Less — inspection of `reader-web/src/main/webapp/src/index.html` reveals a custom jQuery-driven SPA using plugins like jquery.history.js and jquery.ui.js, with Less for stylesheet compilation and Grunt for asset building. No AngularJS dependency exists in the project.
+- Removed the Feed Synchronization Service and Async Event Bus as separate C2 containers — in the C4 model, a Container represents an independently deployable runtime unit (process, server, database). Both the Guava EventBus and FeedService (Guava AbstractScheduledService) run as internal Java classes within the same JVM process as the REST API Server, sharing its thread pools and memory space. They are correctly represented as components in the C3 diagram instead.
 - Clarified that the Desktop Agent both embeds and serves the REST API (in-process relationship) rather than calling it over HTTP
-- Added database access relationship from the Feed Synchronization Service directly, since it writes articles and feed metadata independently of the REST API
+- Updated REST API Server relationships to show it directly fetches feeds and favicons (since the feed sync runs inside the same container)
 
 ### Why those changes were necessary
-- The Event Bus is architecturally significant — it decouples feed synchronization from Lucene indexing and other async operations; showing it as a separate container communicates this design decision
-- The Feed Sync Service has a distinct runtime lifecycle (scheduled execution) and shouldn't be conflated with the request-driven REST API
+- The AngularJS attribution was factually incorrect — the codebase uses jQuery, and accurate technology labeling is essential for a C2 diagram
+- C4 Container-level diagrams must only show independently deployable units; internal Java classes that share a JVM with the REST API are Components (C3-level), not Containers (C2-level). Promoting them to containers misrepresents the deployment architecture.
 - The Desktop Agent's relationship with the REST API is in-process (embedded WAR), not over HTTP — this is a materially different deployment topology
 
 ---
@@ -107,7 +107,7 @@ The initial version mapped all major components:
 3. **ADR 3 - Full-Text Search Engine**: Apache Lucene 4.2 for embedded search
 4. **ADR 4 - Authentication Mechanism**: Custom token-based stateless authentication with jBCrypt
 5. **ADR 5 - Async Event Architecture**: Guava EventBus for decoupled async operations
-6. **ADR 6 - Multi-Platform Distribution**: Six distribution formats (standalone, Debian, Red Hat, Mac, Windows, Docker)
+6. **ADR 6 - Multi-Platform Distribution**: Five Maven distribution modules plus standalone Docker configuration
 7. **ADR 7 - Content Security Sanitization**: OWASP HTML Sanitizer for XSS prevention
 
 ### What changes were made

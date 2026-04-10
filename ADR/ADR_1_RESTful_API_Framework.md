@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-Sismics Reader needs a web framework to expose its functionality as RESTful API endpoints. The application must support multiple client types including a web-based single-page application (AngularJS), an Android mobile app, and a desktop agent. The chosen framework should integrate well with the Java ecosystem, support JSON serialization, and provide a clean resource-oriented API design.
+Sismics Reader needs a web framework to expose its functionality as RESTful API endpoints. The application must support multiple client types including a web-based single-page application (jQuery/Less), an Android mobile app, and a desktop agent. The chosen framework should integrate well with the Java ecosystem, support JSON serialization, and provide a clean resource-oriented API design.
 
 Several options were considered:
 - **Spring MVC** — Full-featured but heavy; brings a large dependency footprint and an opinionated application structure.

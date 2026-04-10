@@ -13,16 +13,17 @@ Options considered:
 - **Multi-format distribution** — Support all major platforms with native packaging formats plus Docker and standalone options.
 
 ## Decision
-We will maintain **six distribution modules** as Maven sub-projects, each producing platform-appropriate packages:
+We will maintain **five distribution modules** as Maven sub-projects under the `prod` profile, plus a separate Docker configuration:
 
 1. **reader-distribution-standalone** — Standalone executable JAR with embedded Jetty for any platform with Java installed.
 2. **reader-distribution-debian** — `.deb` package using jDeb Maven plugin with systemd service integration, for Debian/Ubuntu systems.
 3. **reader-distribution-redhat** — `.rpm` package using RPM Maven plugin with service configuration, for RHEL/CentOS/Fedora systems.
 4. **reader-distribution-mac** — `.app` bundle and `.dmg` image using OSXAppBundle Maven plugin with native macOS integration.
 5. **reader-distribution-windows** — `.exe` installer using NSIS Maven plugin and Launch4j wrapper with system tray integration.
-6. **reader-distribution-docker** — Docker image based on `sismics/jetty:9.3.11` with Docker Compose support.
 
-Distribution modules are only built under the `prod` Maven profile to keep development builds fast.
+Additionally, **reader-distribution-docker** provides a `Dockerfile` and `docker-compose.yml` for container-based deployment. Unlike the five modules above, the Docker distribution is **not** a Maven sub-project — it consists of standalone Docker configuration files and is built directly using `docker build` rather than the Maven lifecycle.
+
+The five Maven distribution modules are only built under the `prod` Maven profile to keep development builds fast.
 
 ## Consequences
 
@@ -34,7 +35,7 @@ Distribution modules are only built under the `prod` Maven profile to keep devel
 - **Conditional builds**: The `prod` profile ensures distribution packaging doesn't slow down development builds.
 
 ### Negative
-- **High maintenance burden**: Six packaging formats require maintaining platform-specific build configurations, scripts, and testing across all target platforms.
-- **Build tool complexity**: Multiple Maven plugins (jDeb, RPM, NSIS, OSXAppBundle, Launch4j) each have their own configuration syntax and quirks.
+- **High maintenance burden**: Five Maven packaging formats plus a standalone Docker configuration require maintaining platform-specific build configurations, scripts, and testing across all target platforms.
+- **Build tool complexity**: Multiple Maven plugins (jDeb, RPM, NSIS, OSXAppBundle, Launch4j) each have their own configuration syntax and quirks, and Docker adds a separate build pipeline outside Maven.
 - **Platform-specific testing**: Each distribution format needs testing on its target platform, which is difficult to automate in a single CI environment.
-- **Version synchronization**: All six distribution modules must stay in sync with the core application version, increasing release management complexity.
+- **Version synchronization**: All five Maven distribution modules must stay in sync with the core application version, and the Docker configuration must be updated separately during releases.
